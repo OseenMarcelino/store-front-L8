@@ -102,22 +102,16 @@ jobs:
           DEPLOYMENT_NAME: ${{ vars.DEPLOYMENT_NAME }}
           CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
         run: |
-          # Create kubeconfig
-          mkdir -p $HOME/.kube
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > $HOME/.kube/config || exit 1
-          export KUBECONFIG=$HOME/.kube/config
-
-          # Debug variables
-          echo "Deployment Name: $DEPLOYMENT_NAME"
-          echo "Container Name: $CONTAINER_NAME"
-          echo "Docker Image: $DOCKER_USERNAME/$DOCKER_IMAGE_NAME"
-
-          # Verify kubectl context
-          kubectl config current-context || exit 1
-
-          # Dry run to check image command
-          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest --dry-run=client || exit 1
-
-          # Update image and restart deployment
-          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest || exit 1
-          kubectl rollout restart deployment/$DEPLOYMENT_NAME || exit 1
+          echo "$KUBE_CONFIG_DATA" | base64 -d > $HOME/.kube/config
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest
+          kubectl rollout restart deployment/$DEPLOYMENT_NAME
+      - name: Verify Deployment
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+          DEPLOYMENT_NAME: ${{ vars.DEPLOYMENT_NAME }}
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get pods -o wide
