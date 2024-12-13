@@ -109,7 +109,7 @@ export default {
 
 <style>
 body {
-  background-image: url('@/assets/algonquin.jpg');
+  background-image: url('@/assets/bestbuy.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed; /* Keeps the background in place when scrolling */
@@ -131,7 +131,7 @@ footer {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #0a5620;
+  background-color: #0046be;
   color: #fff;
   padding: 1rem;
   margin: 0;
