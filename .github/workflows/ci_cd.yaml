@@ -102,15 +102,13 @@ jobs:
           DEPLOYMENT_NAME: ${{ vars.DEPLOYMENT_NAME }}
           CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig
-          export KUBECONFIG=kubeconfig
+          # Decode the Kubernetes config and save it
+          mkdir -p $HOME/.kube
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > $HOME/.kube/config
+          
+          # Verify config file
+          export KUBECONFIG=$HOME/.kube/config
+
+          # Update image and restart deployment
           kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$DOCKER_USERNAME/$DOCKER_IMAGE_NAME:latest
           kubectl rollout restart deployment/$DEPLOYMENT_NAME
-      - name: Verify Deployment
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-          DEPLOYMENT_NAME: ${{ vars.DEPLOYMENT_NAME }}
-        run: |
-          export KUBECONFIG=kubeconfig
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
-          kubectl get pods -o wide
